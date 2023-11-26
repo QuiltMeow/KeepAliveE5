@@ -1,0 +1,45 @@
+name: Register APP
+
+on:
+  schedule:
+    - cron: "0 3 */1 * *"
+  workflow_dispatch:
+
+jobs:
+  register:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          ref: master
+
+      - name: Setup Python And Poetry
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: Gr1N/setup-poetry@v8
+
+      - name: Setup Node JS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install Requirement
+        run: |
+          poetry install
+          cd register
+          npm install
+
+      - name: Register App
+        env:
+          USER: ${{ secrets.USER }}
+          PASSWD: ${{ secrets.PASSWD }}
+        run: |
+          cd register
+          bash register_apps_by_force.sh
+          cd ..
+          poetry run python crypto.py e
+
+      - name: Commit And Push
+        run: bash reset.sh "Generate App Config"

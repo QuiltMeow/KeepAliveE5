@@ -1,0 +1,32 @@
+name: Invoke API
+
+on:
+  schedule:
+    - cron: "32 */4 * * *"
+  workflow_dispatch:
+
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          ref: master
+
+      - name: Setup Python And Poetry
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: Gr1N/setup-poetry@v8
+
+      - name: Install Requirement
+        run: poetry install
+
+      - name: Test API
+        env:
+          PASSWD: ${{ secrets.PASSWD }}
+        run: bash routine.sh
+
+      - name: Commit And Push
+        run: bash reset.sh "Update App Config"
